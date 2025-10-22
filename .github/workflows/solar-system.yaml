@@ -33,7 +33,7 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                 name: Mocha Test Results
-                path: results.xml
+                path: test-results.xml
     code-coverage:
         name: Code Coverage
         runs-on: ubuntu-latest
