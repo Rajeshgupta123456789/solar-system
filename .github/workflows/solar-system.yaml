@@ -67,5 +67,17 @@ jobs:
                 path: coverage
                 retention-days: 5
 
-            
+    Docker:
+        name: Docker Build and Push
+        needs: [unit-testing, code-coverage]
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+            - name: Log in to Docker Hub
+              uses: docker/login-action@v3
+              with:
+                username: ${{ vars.DOCKER_HUB_USERNAME }}
+                password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+                 
 
