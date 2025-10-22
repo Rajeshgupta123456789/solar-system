@@ -1,1 +1,24 @@
-name: Exploring Solar CI
+name: Solar System Workflow
+on:
+  push:
+    branches:
+      - main
+      - 'feature/*'
+jobs:
+    unit-testing:
+        name: Unit Testing
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+            - name: Npm Install
+              uses: actions/setup-node@v3
+              with:
+                node-version: 18
+            - name: Install Dependencies
+              run: npm install
+            - name: Run Unit Tests
+              run: npm test
+
+            
+
