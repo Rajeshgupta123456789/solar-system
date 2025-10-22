@@ -2,7 +2,6 @@ name: Solar System Workflow
 on:
   push:
     branches:
-      - main
       - 'feature/*'
 jobs:
     unit-testing:
@@ -11,7 +10,7 @@ jobs:
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v4
-            - name: Npm Install
+            - name: Node Js installation
               uses: actions/setup-node@v3
               with:
                 node-version: 18
