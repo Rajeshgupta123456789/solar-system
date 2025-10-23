@@ -209,8 +209,45 @@ jobs:
             kubectl rollout status deployment/solar-system -n development --timeout=120s
             
             # Show all resources in namespace
-            echo "Listing all resources in development namespace:"
+            echo "=== Kubernetes Resources ==="
             kubectl get all -n development
+            
+            # Debug Ingress Setup
+            echo -e "\n=== Ingress Controller Status ==="
+            kubectl get pods -n ingress-nginx
+            kubectl get svc -n ingress-nginx
+            
+            echo -e "\n=== Application Pod Logs ==="
+            kubectl logs -l app=solar-system -n development
+            
+            echo -e "\n=== Service Endpoint Check ==="
+            NODEPORT=$(kubectl get svc solar-system -n development -o jsonpath='{.spec.ports[0].nodePort}')
+            MINIKUBE_IP=$(minikube ip)
+            echo "Direct NodePort access: http://$MINIKUBE_IP:$NODEPORT"
+            
+            echo -e "\n=== Ingress Status ==="
+            kubectl get ingress -n development
+            kubectl describe ingress solar-system -n development
+            
+            echo -e "\n=== Testing Application Access ==="
+            INGRESS_HOST=$(kubectl get ingress solar-system -n development -o jsonpath='{.spec.rules[0].host}')
+            echo "Ingress Host: $INGRESS_HOST"
+            
+            # Test direct NodePort access
+            echo "Testing NodePort access..."
+            curl -v --max-time 5 http://$MINIKUBE_IP:$NODEPORT || true
+            
+            # Test through Ingress
+            echo -e "\nTesting Ingress access..."
+            curl -v --max-time 5 -H "Host: $INGRESS_HOST" http://$MINIKUBE_IP:$NODEPORT || true
+            
+            # Add entry to /etc/hosts for testing
+            echo "Adding host entry for testing..."
+            echo "$MINIKUBE_IP $INGRESS_HOST" | sudo tee -a /etc/hosts
+            
+            # Final test with hostname
+            echo -e "\nTesting with hostname..."
+            curl -v --max-time 5 http://$INGRESS_HOST || true
             
             # Check pod status and logs
             echo "\n=== Pod Status and Logs ==="
