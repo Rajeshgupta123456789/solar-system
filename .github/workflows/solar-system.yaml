@@ -211,3 +211,26 @@ jobs:
             # Show all resources in namespace
             echo "Listing all resources in development namespace:"
             kubectl get all -n development
+            
+            # Display Ingress details and application URL
+            echo "\nIngress Details:"
+            kubectl get ingress -n development
+            
+            echo "\n=== Application Access Information ==="
+            echo "Your application will be accessible at:"
+            INGRESS_HOST=$(kubectl get ingress solar-system -n development -o jsonpath='{.spec.rules[0].host}')
+            echo "http://$INGRESS_HOST"
+            echo "https://$INGRESS_HOST (if TLS is configured)"
+            
+            echo "\nWaiting for Ingress to get IP/Hostname..."
+            for i in {1..30}; do
+              INGRESS_STATUS=$(kubectl get ingress solar-system -n development -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+              if [ ! -z "$INGRESS_STATUS" ]; then
+                break
+              fi
+              sleep 2
+            done
+            
+            # Show the final Ingress status
+            echo "\nFinal Ingress Status:"
+            kubectl describe ingress solar-system -n development | grep -A2 "Host"
