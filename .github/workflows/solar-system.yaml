@@ -142,9 +142,7 @@ jobs:
             minikube addons enable ingress-dns
         - name: Kubectl run
           run: |
-            kubectl get nodes
             kubectl create namespace development
-            kubectl create namespace ingress-nginx
             kubectl get pods -n ingress-nginx
             kubectl get pods -A
 
