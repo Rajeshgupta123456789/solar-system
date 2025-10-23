@@ -79,5 +79,12 @@ jobs:
               with:
                 username: ${{ vars.DOCKER_HUB_USERNAME }}
                 password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+            - name: Build the docker image
+              uses: docker/build-push-action@v4
+              with:
+                context: .
+                push: false
+                tags: ${{ vars.DOCKER_HUB_USERNAME }}/solar-system:${{ github.sha }}
                  
 
