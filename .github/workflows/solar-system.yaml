@@ -140,6 +140,7 @@ jobs:
             kubectl get nodes
             kubectl get pods -A
             kubectl create namespace development
+            kubectl create namespace ingress-nginx
             kubectl -n ingress-nginx rollout status deploy/ingress-nginx-controller
             kubectl -n ingress-nginx get pods
 
