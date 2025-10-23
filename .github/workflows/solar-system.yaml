@@ -136,10 +136,21 @@ jobs:
           id: minikube
           uses: medyagh/setup-minikube@latest
 
-        - name: Enable Minikube Addons
+        - name: Enable Minikube Addons and wait for Ingress
           run: |
+            # Enable required addons
             minikube addons enable ingress
             minikube addons enable ingress-dns
+            
+            # Wait for ingress controller pod to be ready
+            echo "Waiting for ingress-nginx-controller to be ready..."
+            kubectl wait --namespace ingress-nginx \
+              --for=condition=ready pod \
+              --selector=app.kubernetes.io/component=controller \
+              --timeout=120s
+            
+            # Verify ingress-nginx components
+            kubectl get all -n ingress-nginx
           
         - name: Get Minikube NodePort IP and Port
           run: |
