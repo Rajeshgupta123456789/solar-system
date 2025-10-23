@@ -322,15 +322,27 @@ jobs:
             
             # Start port forwarding using kubectl in the background
             echo "\n=== Setting up port forwarding ==="
-            kubectl port-forward -n development svc/solar-system 8080:3000 &
+            # Use 0.0.0.0 to allow external access
+            kubectl port-forward -n development svc/solar-system 8080:3000 --address 0.0.0.0 &
             PORT_FORWARD_PID=$!
             echo "Port forwarding PID: $PORT_FORWARD_PID"
             
             # Get public IP of the runner
             PUBLIC_IP=$(curl -s ifconfig.me)
             echo "\n=== Access Information ==="
-            echo "The application is now accessible at: http://$PUBLIC_IP:8080"
-            echo "Note: This URL will only be available during the GitHub Actions job runtime"
+            echo "------------------------------------------------"
+            echo "🌎 Application URLs (available for next 5 minutes):"
+            echo "1. Port forwarded URL: http://$PUBLIC_IP:8080"
+            echo ""
+            echo "📝 Additional Information:"
+            echo "- This URL is temporary and will work only while this job is running"
+            echo "- Job will remain active for 5 minutes"
+            echo "- Healthchecks will run every 10 seconds"
+            echo "------------------------------------------------"
+            
+            # Get application version or status
+            echo "\n=== Application Status ==="
+            curl -s http://localhost:8080 | head -n 20 || true
             
             # Periodic health checks
             for i in {1..30}; do
