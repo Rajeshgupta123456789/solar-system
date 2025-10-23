@@ -29,16 +29,22 @@ spec:
             name: mongo-db-creds
         readinessProbe:
           httpGet:
-            path: /live
+            path: /
             port: 3000
-          initialDelaySeconds: 10
-          periodSeconds: 5
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
         livenessProbe:
           httpGet:
-            path: /live
+            path: /
             port: 3000
-          initialDelaySeconds: 15
-          periodSeconds: 10
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
         resources:
           requests:
             cpu: "100m"
