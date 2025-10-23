@@ -139,5 +139,8 @@ jobs:
           run: |
             kubectl get nodes
             kubectl get pods -A
+            kubectl create namespace development || echo "namespace already exists"
+            kubectl create ingresscontroller nginx-ingress-controller --namespace development || echo "ingress controller already exists"
+
                  
 
