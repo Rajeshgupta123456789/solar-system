@@ -177,3 +177,17 @@ jobs:
             kubectl get pods -n ingress-nginx
             kubectl -n ingress-nginx get svc ingress-nginx-controller
             kubectl get pods -n development
+        
+        - name: Create MongoDB Secret
+          run: |
+            kubectl -n ${{ vars.NAMESPACE }} create secret generic mongo-db-creds \
+              --from-literal=MONGO_URI= ${{ env.MONGO_URI }} \
+              --from-literal=MONGO_USERNAME=${{ vars.MONGO_USERNAME }} \
+              --from-literal=MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }} \
+              --save-config \
+              --dry-run=client \
+              -o yaml | kubectl apply -f -
+        
+        - name: Deploy to dev Environment
+          run: |
+            kubectl apply -f kubernetes/development -n development
