@@ -151,8 +151,8 @@ jobs:
             NODE_PORT=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.spec.ports[0].nodePort}')
             echo "NodePort: $NODE_PORT"
             
-            # Combine IP and Port
-            INGRESS_URL="${MINIKUBE_IP}:${NODE_PORT}"
+            # Combine IP and Port (using dash instead of colon for DNS compatibility)
+            INGRESS_URL="${MINIKUBE_IP}-${NODE_PORT}"
             echo "Ingress URL: $INGRESS_URL"
             
             # Set the environment variable
