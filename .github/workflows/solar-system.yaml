@@ -214,6 +214,35 @@ jobs:
             # Test the deployed application endpoint
             echo "Testing application endpoint..."
             curl -v "http://solar-system-development.${{ env.INGRESS_IP }}.nip.io/live"
+
+        - name: Expose ingress locally (port-forward) and start ngrok
+          env:
+            NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
+            NS: ${{ vars.NAMESPACE }}   # e.g. "development"
+          run: |
+            set -eux
+            # 1) Port-forward ingress 80 -> localhost:8080 (background)
+            kubectl -n ingress-nginx port-forward svc/ingress-nginx-controller 8080:80 >/tmp/pf.log 2>&1 &
+
+            # 2) Install & auth ngrok
+            curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
+            echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
+            sudo apt-get update && sudo apt-get install -y ngrok
+            ngrok config add-authtoken "$NGROK_AUTHTOKEN"
+
+            # 3) Build the required Host (nip.io resolves to your minikube IP)
+            IP="$(minikube ip)"
+            HOST="solar-system-${NAMESPACE}.${MINIKUBE_IP}.nip.io"
+
+            # 4) Start ngrok to localhost:8080 AND rewrite Host header
+            nohup ngrok http 8080 --host-header="$HOST" > /tmp/ngrok.log 2>&1 &
+
+            # 5) Grab the public URL
+            sleep 3
+            curl -s http://127.0.0.1:4040/api/tunnels | jq -r '.tunnels[0].public_url' > /tmp/ngrok_url
+            echo "NGROK_URL=$(cat /tmp/ngrok_url)" >> $GITHUB_ENV
+            echo "Public URL: $(cat /tmp/ngrok_url)"
+
         - name: adding a wait time
           run: |
             echo "Keeping the environment alive for additional testing..."
