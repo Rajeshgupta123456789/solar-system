@@ -176,4 +176,4 @@ jobs:
             INGRESS_IP: ${{ env.INGRESS_IP }}              
         - name: check files
           run: |
-            cat kubernetes\development\*.yaml
+            cat kubernetes/development/*.yaml
