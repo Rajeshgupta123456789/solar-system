@@ -135,13 +135,17 @@ jobs:
         - name: Install minikube
           id: minikube
           uses: medyagh/setup-minikube@latest
+
+        - name: Enable Minikube Addons
+          run: |
+            minikube addons enable ingress
+            minikube addons enable ingress-dns
         - name: Kubectl run
           run: |
             kubectl get nodes
             kubectl create namespace development
             kubectl create namespace ingress-nginx
-            kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.1/deploy/static/provider/minikube/deploy.yaml
-            kubectl -n ingress-nginx get pods
+            kubectl get pods -n ingress-nginx
             kubectl get pods -A
 
                  
