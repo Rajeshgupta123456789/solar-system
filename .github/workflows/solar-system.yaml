@@ -19,14 +19,18 @@ jobs:
             MONGO_URI: 'mongodb://localhost:27017/superData'
             MONGO_USERNAME: non-prod-user
             MONGO_PASSWORD: non-prod-password
-        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                node-version: [18,20]
+                operating-system: [ubuntu-latest]
+        runs-on: ${{ matrix.operating-system }}
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v4
-            - name: Node Js Version 20
+            - name: Node Js Version ${{ matrix.node-version }}
               uses: actions/setup-node@v3
               with:
-                node-version: 20
+                node-version: ${{ matrix.node-version }}
             - name: cache npm dependencies
               uses: actions/cache@v3
               with:
@@ -39,7 +43,7 @@ jobs:
             - name: Archive Test Results
               uses: actions/upload-artifact@v4
               with:
-                name: Mocha-Test-Results 
+                name: Mocha-Test-Results ${{ matrix.operating-system }}-Node${{ matrix.node-version }}
                 path: test-results.xml
                 overwrite: true
     code-coverage:
