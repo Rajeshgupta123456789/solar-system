@@ -176,4 +176,4 @@ jobs:
             kubectl create namespace development
             kubectl get pods -n ingress-nginx
             kubectl -n ingress-nginx get svc ingress-nginx-controller
-            kubectl get pods -A
+            kubectl get pods -n development
