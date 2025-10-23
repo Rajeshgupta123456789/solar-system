@@ -140,12 +140,6 @@ jobs:
           run: |
             minikube addons enable ingress
             minikube addons enable ingress-dns
-        - name: Kubectl run
-          run: |
-            kubectl create namespace development
-            kubectl get pods -n ingress-nginx
-            kubectl -n ingress-nginx get svc ingress-nginx-controller
-            kubectl get pods -A
           
         - name: Get Minikube NodePort IP and Port
           run: |
@@ -177,3 +171,9 @@ jobs:
         - name: check files
           run: |
             cat kubernetes/development/*.yaml
+        - name: Kubectl run
+          run: |
+            kubectl create namespace development
+            kubectl get pods -n ingress-nginx
+            kubectl -n ingress-nginx get svc ingress-nginx-controller
+            kubectl get pods -A
