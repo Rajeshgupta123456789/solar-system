@@ -275,18 +275,60 @@ jobs:
             echo -e "\n=== Recent Events ==="
             kubectl get events -n development --sort-by='.lastTimestamp' | tail -10
             
-        - name: Keep environment running for testing
+        - name: Debug and keep environment running
           run: |
-            echo "Application is now accessible!"
-            echo "You can access the application at:"
-            INGRESS_HOST=$(kubectl get ingress solar-system -n development -o jsonpath='{.spec.rules[0].host}')
-            echo "http://$INGRESS_HOST"
-            echo "Environment will be kept alive for 5 minutes for testing..."
+            # Get Minikube and service information
+            MINIKUBE_IP=$(minikube ip)
+            echo "Minikube IP: $MINIKUBE_IP"
+            
+            # Get NodePort
+            NODE_PORT=$(kubectl get svc solar-system -n development -o jsonpath='{.spec.ports[0].nodePort}')
+            echo "NodePort: $NODE_PORT"
+            
+            # Show service details
+            echo "\n=== Service Details ==="
+            kubectl get svc -n development solar-system -o yaml
+            
+            # Show pod details
+            echo "\n=== Pod Details ==="
+            kubectl get pods -n development
+            kubectl describe pods -n development
+            
+            # Show pod logs
+            echo "\n=== Pod Logs ==="
+            kubectl logs -l app=solar-system -n development
+            
+            # Test direct NodePort access
+            echo "\n=== Testing direct NodePort access ==="
+            curl -v http://$MINIKUBE_IP:$NODE_PORT || true
+            
+            # Show ingress details
+            echo "\n=== Ingress Details ==="
+            kubectl get ingress -n development solar-system -o yaml
+            
+            # Show available endpoints
+            echo "\n=== Available Access Points ==="
+            echo "1. Direct NodePort access: http://$MINIKUBE_IP:$NODE_PORT"
+            echo "2. Ingress access: http://solar-system-development.$MINIKUBE_IP.nip.io"
+            
+            echo "\n=== Testing DNS Resolution ==="
+            INGRESS_HOST="solar-system-development.$MINIKUBE_IP.nip.io"
+            nslookup $INGRESS_HOST || true
+            
+            echo "\nEnvironment will be kept alive for testing..."
+            echo "You can try both URLs above to access the application"
             echo "Current time: $(date)"
             echo "Environment will be destroyed at: $(date -d '+5 minutes')"
             
-            # Keep the step running for 5 minutes
-            sleep 300
+            # Periodic health checks
+            for i in {1..30}; do
+              echo "\nHealth check attempt $i (every 10 seconds):"
+              echo "Testing NodePort..."
+              curl -s -o /dev/null -w "NodePort Status: %{http_code}\n" http://$MINIKUBE_IP:$NODE_PORT || true
+              echo "Testing Ingress..."
+              curl -s -o /dev/null -w "Ingress Status: %{http_code}\n" -H "Host: $INGRESS_HOST" http://$MINIKUBE_IP || true
+              sleep 10
+            done
             
             # Check pod status and logs
             echo "\n=== Pod Status and Logs ==="
