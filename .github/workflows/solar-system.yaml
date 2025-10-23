@@ -320,15 +320,28 @@ jobs:
             echo "Current time: $(date)"
             echo "Environment will be destroyed at: $(date -d '+5 minutes')"
             
+            # Start port forwarding using kubectl in the background
+            echo "\n=== Setting up port forwarding ==="
+            kubectl port-forward -n development svc/solar-system 8080:3000 &
+            PORT_FORWARD_PID=$!
+            echo "Port forwarding PID: $PORT_FORWARD_PID"
+            
+            # Get public IP of the runner
+            PUBLIC_IP=$(curl -s ifconfig.me)
+            echo "\n=== Access Information ==="
+            echo "The application is now accessible at: http://$PUBLIC_IP:8080"
+            echo "Note: This URL will only be available during the GitHub Actions job runtime"
+            
             # Periodic health checks
             for i in {1..30}; do
               echo "\nHealth check attempt $i (every 10 seconds):"
-              echo "Testing NodePort..."
-              curl -s -o /dev/null -w "NodePort Status: %{http_code}\n" http://$MINIKUBE_IP:$NODE_PORT || true
-              echo "Testing Ingress..."
-              curl -s -o /dev/null -w "Ingress Status: %{http_code}\n" -H "Host: $INGRESS_HOST" http://$MINIKUBE_IP || true
+              echo "Testing service..."
+              curl -s -o /dev/null -w "Service Status: %{http_code}\n" http://localhost:8080 || true
               sleep 10
             done
+            
+            # Cleanup port forwarding
+            kill $PORT_FORWARD_PID || true
             
             # Check pod status and logs
             echo "\n=== Pod Status and Logs ==="
