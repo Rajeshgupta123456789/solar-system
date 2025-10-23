@@ -137,9 +137,7 @@ jobs:
           uses: medyagh/setup-minikube@latest
         - name: Kubectl run
           run: |
-            kubectl version --short
-            echo ----------------------------------
             kubectl get nodes
-
+            kubectl get pods -A
                  
 
