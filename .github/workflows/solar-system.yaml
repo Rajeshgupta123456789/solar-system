@@ -146,9 +146,24 @@ jobs:
             kubectl get pods -n ingress-nginx
             kubectl -n ingress-nginx get svc ingress-nginx-controller
             kubectl get pods -A
-        - name: Set INGRESS_IP variable
+          
+        - name: Expose ingress via LoadBalancer
           run: |
-            export "INGRESS_IP=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath="{.status.loadBalancer.ingress[0].ip}")" >> $GITHUB_ENV
+            kubectl -n ingress-nginx patch svc ingress-nginx-controller \
+            -p '{"spec": {"type": "LoadBalancer"}}'
+            # Start tunnel in background so LoadBalancer gets an external IP
+            sudo -b minikube tunnel >/tmp/minikube-tunnel.log 2>&1 || true
+            # Wait up to ~2 minutes for external IP
+            for i in {1..24}; do
+            IP=$(kubectl -n ingress-nginx get svc ingress-nginx-controller \
+            -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            if [ -n "$IP" ]; then echo "External IP: $IP"; break; fi
+            sleep 5
+            done
+            if [ -z "$IP" ]; then
+            echo "No External IP assigned"; exit 1
+            fi
+            echo "INGRESS_IP=$IP" >> $GITHUB_ENV
         - name: Replace tokens in Manifests files
           uses: cschleiden/replace-tokens@v1
           with:
