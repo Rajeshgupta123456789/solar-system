@@ -133,23 +133,13 @@ jobs:
           uses: actions/checkout@v4
 
         - name: Install minikube
-          uses: manusa/actions-minikube@v2.6.0
-          with:
-            minikube version: 'latest'
-            kubernetes version: 'v1.26.0'
-            driver: 'docker'
-        - name: Start minikube
-          run: minikube start --driver=docker
-        - name: Set up kubectl
-          uses: azure/setup-kubectl@v3
-          with:
-            version: 'v1.26.0'
-        - name: verify kubectl installation
+          id: minikube
+          uses: medyagh/setup-minikube@latest
+        - name: Kubectl run
           run: |
             kubectl version --short
-            echo ------------------------
+            echo ----------------------------------
             kubectl get nodes
-
 
                  
 
