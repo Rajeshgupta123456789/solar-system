@@ -212,25 +212,61 @@ jobs:
             echo "Listing all resources in development namespace:"
             kubectl get all -n development
             
+            # Check pod status and logs
+            echo "\n=== Pod Status and Logs ==="
+            POD_NAME=$(kubectl get pods -n development -l app=solar-system -o jsonpath='{.items[0].metadata.name}')
+            echo "Pod Status:"
+            kubectl describe pod $POD_NAME -n development
+            
+            echo "\nPod Logs:"
+            kubectl logs $POD_NAME -n development
+            
+            # Verify ingress-nginx controller status
+            echo "\n=== Ingress Controller Status ==="
+            kubectl get pods -n ingress-nginx
+            kubectl get svc -n ingress-nginx
+            
             # Display Ingress details and application URL
-            echo "\nIngress Details:"
+            echo "\n=== Ingress Details ==="
             kubectl get ingress -n development
             
             echo "\n=== Application Access Information ==="
-            echo "Your application will be accessible at:"
             INGRESS_HOST=$(kubectl get ingress solar-system -n development -o jsonpath='{.spec.rules[0].host}')
+            echo "Application URLs:"
             echo "http://$INGRESS_HOST"
             echo "https://$INGRESS_HOST (if TLS is configured)"
             
-            echo "\nWaiting for Ingress to get IP/Hostname..."
+            # Test application connectivity
+            echo "\n=== Testing Application Connectivity ==="
+            echo "Waiting for application to be ready..."
             for i in {1..30}; do
-              INGRESS_STATUS=$(kubectl get ingress solar-system -n development -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-              if [ ! -z "$INGRESS_STATUS" ]; then
+              if curl -k -s -o /dev/null -w "%{http_code}" "http://$INGRESS_HOST/live" | grep -q "200"; then
+                echo "Application is accessible!"
                 break
               fi
-              sleep 2
+              echo "Attempt $i: Application not ready yet..."
+              
+              # Show pod and ingress status for debugging
+              echo "\nCurrent Pod Status:"
+              kubectl get pods -n development
+              echo "\nCurrent Ingress Status:"
+              kubectl describe ingress solar-system -n development
+              
+              if [ $i -eq 30 ]; then
+                echo "Application failed to become accessible after 30 attempts"
+                
+                # Additional debugging information
+                echo "\n=== Debug Information ==="
+                echo "1. Ingress Controller Logs:"
+                kubectl logs -n ingress-nginx -l app.kubernetes.io/component=controller --tail=50
+                
+                echo "\n2. Application Pod Events:"
+                kubectl get events -n development --sort-by='.lastTimestamp' | grep solar-system
+                
+                echo "\n3. MongoDB Secret Check:"
+                kubectl get secret mongo-db-creds -n development -o yaml
+                
+                exit 1
+              fi
+              sleep 10
             done
-            
-            # Show the final Ingress status
-            echo "\nFinal Ingress Status:"
-            kubectl describe ingress solar-system -n development | grep -A2 "Host"
