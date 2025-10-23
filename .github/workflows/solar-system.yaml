@@ -287,7 +287,7 @@ jobs:
             # Start port forwarding using kubectl in the background
             echo "\n=== Setting up port forwarding ==="
             # Use 0.0.0.0 to allow external access
-            kubectl port-forward -n development svc/solar-system 8080:3000 --address 0.0.0.0 &
+            sudo -E kubectl port-forward -n development svc/solar-system 8080:3000 --address 0.0.0.0 &
             PORT_FORWARD_PID=$!
             echo "Port forwarding PID: $PORT_FORWARD_PID"
             
