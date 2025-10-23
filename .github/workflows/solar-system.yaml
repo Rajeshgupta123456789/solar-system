@@ -239,42 +239,6 @@ jobs:
             kubectl describe pods -l app=solar-system -n development
             echo -e "\n=== Pod Logs ==="
             kubectl logs -l app=solar-system -n development
-            
-            # Test service directly first
-            echo -e "\n=== Testing Service Directly ==="
-            kubectl run curl-test --image=curlimages/curl -i --rm --restart=Never -n development -- \
-              curl -v http://solar-system:3000 || true
-            
-            # Test NodePort access (for debugging)
-            echo -e "\n=== Testing NodePort Access (Debug) ==="
-            NODEPORT=$(kubectl get svc solar-system -n development -o jsonpath='{.spec.ports[0].nodePort}')
-            echo "Service available on NodePort: $NODEPORT"
-            
-            # Test Ingress Access
-            echo -e "\n=== Testing Ingress Access ==="
-            echo "Testing URL: http://$INGRESS_HOST"
-            for i in {1..3}; do
-              echo "Attempt $i: Testing Ingress access..."
-              curl -v --max-time 10 "http://$INGRESS_HOST" || true
-              sleep 5
-            done
-            
-            # Test through Ingress
-            echo -e "\n=== Testing Ingress Access ==="
-            for i in {1..3}; do
-              echo "Attempt $i: Testing with Host header"
-              curl -v --max-time 10 -H "Host: $INGRESS_HOST" http://$MINIKUBE_IP || true
-              sleep 5
-            done
-            
-            # Show ingress-nginx logs
-            echo -e "\n=== Ingress Controller Logs ==="
-            kubectl logs -n ingress-nginx -l app.kubernetes.io/component=controller --tail=50
-            
-            # Show events
-            echo -e "\n=== Recent Events ==="
-            kubectl get events -n development --sort-by='.lastTimestamp' | tail -10
-            
         - name: Debug and keep environment running
           run: |
             # Get Minikube and service information
@@ -411,5 +375,12 @@ jobs:
                 
                 exit 1
               fi
+              sleep 10
+            done
+        - name: adding a wait time
+          run: |
+            echo "Keeping the environment alive for additional testing..."
+            for i in {1..30}; do
+              echo "Wait iteration $i: Environment will remain active for testing."
               sleep 10
             done
