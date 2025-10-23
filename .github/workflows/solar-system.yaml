@@ -275,6 +275,19 @@ jobs:
             echo -e "\n=== Recent Events ==="
             kubectl get events -n development --sort-by='.lastTimestamp' | tail -10
             
+        - name: Keep environment running for testing
+          run: |
+            echo "Application is now accessible!"
+            echo "You can access the application at:"
+            INGRESS_HOST=$(kubectl get ingress solar-system -n development -o jsonpath='{.spec.rules[0].host}')
+            echo "http://$INGRESS_HOST"
+            echo "Environment will be kept alive for 5 minutes for testing..."
+            echo "Current time: $(date)"
+            echo "Environment will be destroyed at: $(date -d '+5 minutes')"
+            
+            # Keep the step running for 5 minutes
+            sleep 300
+            
             # Check pod status and logs
             echo "\n=== Pod Status and Logs ==="
             POD_NAME=$(kubectl get pods -n development -l app=solar-system -o jsonpath='{.items[0].metadata.name}')
