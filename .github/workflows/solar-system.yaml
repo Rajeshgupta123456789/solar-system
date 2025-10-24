@@ -127,8 +127,6 @@ jobs:
   
     dev-deploy: 
       needs: Docker
-      outputs:
-        APP_INGRESS_URL: ${{ steps.set-ingress-host-address.outputs.APP_INGRESS_HOST }}
       runs-on: ubuntu-latest
       steps:
         - name: Checkout Repository
@@ -244,22 +242,17 @@ jobs:
             curl -s http://127.0.0.1:4040/api/tunnels | jq -r '.tunnels[0].public_url' > /tmp/ngrok_url
             echo "NGROK_URL=$(cat /tmp/ngrok_url)" >> $GITHUB_ENV
             echo "Public URL: $(cat /tmp/ngrok_url)"
-
-        - name: Set app Ingress Host URL output
-          id: set-ingress-host-address
+      
+        - name: adding a wait time
+          run: |
+            echo "Keeping the environment alive for additional testing..."
+            for i in {1..30}; do
+              echo "Wait iteration $i: Environment will remain active for testing."
+              sleep 10
+            done
+        - name: Integration Testing
           run: |
             IP="$(minikube ip)"
-            HOST="solar-system-${{ vars.NAMESPACE }}.${IP}.nip.io"
-            echo APP_INGRESS_HOST=$HOST >> $GITHUB_ENV
-  
-    Integration-Testing:
-      needs: dev-deploy
-      runs-on: ubuntu-latest
-      steps:
-        - name: Integration Test
-          env:
-            URL: ${{ needs.dev-deploy.outputs.APP_INGRESS_URL }}
-          run: |
-            echo $URL
-            echo "--------------------------------"
-            curl http://$URL/live -s -k | jq -r .status | grep -i live
+            HOST="solar-system-${{ vars.NAMESPACE}}.${IP}.nip.io"
+            echo "Running integration tests against the deployed application..."
+            curl http://$HOST/live -s -k | jq -r .status | grep -i live
