@@ -4,9 +4,9 @@ metadata:
   labels:
     app: solar-system
   name: solar-system
-  namespace: ${NAMESPACE}
+  namespace: _{_NAMESPACE_}_
 spec:
-  replicas: ${REPLICAS}
+  replicas: _{_REPLICAS_}_
   selector:
     matchLabels:
       app: solar-system
@@ -17,7 +17,7 @@ spec:
         app: solar-system
     spec:
       containers:
-      - image: ${K8S_IMAGE}
+      - image: _{_IMAGE_}_
         imagePullPolicy: Always
         name: solar-system
         ports:
@@ -27,3 +27,28 @@ spec:
         envFrom:
         - secretRef:
             name: mongo-db-creds
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
