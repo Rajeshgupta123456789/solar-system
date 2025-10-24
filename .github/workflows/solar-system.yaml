@@ -10,7 +10,7 @@ env:
     MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
 jobs:
     unit-testing:
-        name: Unit Testing
+        name: Unit Testing 
         services:
            mongo-db:
              image: siddharth67/mongo-db:non-prod
@@ -147,4 +147,3 @@ jobs:
       with:
         environment: production
         k8s-manifests-path: kubernetes/production/
-
