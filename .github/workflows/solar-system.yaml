@@ -1,4 +1,4 @@
-name: Solar System Workflow
+name: Solar System Workflow production
 on:
   push:
     branches:
