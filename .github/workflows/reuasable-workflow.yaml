@@ -6,10 +6,21 @@ on:
           required: true
         ngrok_authtoken:
           required: true
+      inputs:
+        environment:
+          description: Deployment environment development or production
+          default: development
+          required: true
+          type: string
+        k8s-manifests-path:
+          description: Path to Kubernetes manifests
+          default: kubernetes/
+          required: true
+          type: string
         
 jobs:
     reusable-workflow:
-     environment: development
+     environment: ${{ inputs.environment }}
      runs-on: ubuntu-latest
      steps:
         - name: Checkout Repository
@@ -53,7 +64,7 @@ jobs:
           with:
             tokenPrefix: '_{_'
             tokenSuffix: '_}_'
-            files: '["kubernetes/development/*.yaml"]'
+            files: '["${{ inputs.k8s-manifests-path }}/*.yaml"]'
           env:
             NAMESPACE: ${{ vars.NAMESPACE }}
             REPLICAS: ${{ vars.REPLICAS }}
@@ -61,7 +72,7 @@ jobs:
             INGRESS_IP: ${{ env.INGRESS_IP }}              
         - name: check files
           run: |
-            cat kubernetes/development/*.yaml
+            cat ${{ inputs.k8s-manifests-path}}/*.yaml
         - name: Create namespace and MongoDB Secret
           run: |
             # Create namespace if it doesn't exist
@@ -83,20 +94,20 @@ jobs:
         - name: Deploy and verify
           run: |
             # Apply Kubernetes manifests
-            kubectl apply -f kubernetes/development -n development
+            kubectl apply -f ${{ inputs.k8s-manifests-path }} -n ${{ inputs.environment }}
 
             # Wait for deployment to be ready
-            kubectl rollout status deployment/solar-system -n development --timeout=120s
+            kubectl rollout status deployment/solar-system -n ${{ inputs.environment }} --timeout=120s
 
             # Verify pods are running
-            kubectl get pods -n development
+            kubectl get pods -n ${{ inputs.environment }}
 
             # Show logs of the deployed application
-            kubectl logs -l app=solar-system -n development
+            kubectl logs -l app=solar-system -n ${{ inputs.environment }}
 
             # Test the deployed application endpoint
             echo "Testing application endpoint..."
-            curl -v "http://solar-system-development.${{ env.INGRESS_IP }}.nip.io/live"
+            curl -v "http://solar-system-${{ inputs.environment }}.${{ env.INGRESS_IP }}.nip.io/live"
 
         - name: Expose ingress locally (port-forward) and start ngrok
           env:

@@ -133,6 +133,9 @@ jobs:
       secrets:
         mongodb_password: ${{ secrets.mongodb_password }}
         ngrok_authtoken: ${{ secrets.ngrok_authtoken }}
+      with:
+        environment: development
+        k8s-manifests-path: kubernetes/development/
 
     prod-deploy:
       if: github.ref == 'refs/heads/main' 
@@ -141,3 +144,6 @@ jobs:
       secrets:
         mongodb_password: ${{ secrets.mongodb_password }}
         ngrok_authtoken: ${{ secrets.ngrok_authtoken }}
+      with:
+        environment: production
+        k8s-manifests-path: kubernetes/production/
