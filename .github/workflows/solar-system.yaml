@@ -1,4 +1,4 @@
-name: Solar System Workflow production
+name: Solar System Workflow production Deploy & CI/CD
 on:
   push:
     branches:
