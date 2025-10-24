@@ -248,7 +248,7 @@ jobs:
         - name: Set app Ingress Host URL output
           id: set-ingress-host-address
           run: |
-            echo APP_INGRESS_HOST=$(kubectl -n "$NAMESPACE" get ingress solar-system -o jsonpath='{.spec.rules[0].host}'); echo "Ingress Host: $HOST"; echo "INGRESS_HOST=$HOST" >> $GITHUB_ENV
+            echo APP_INGRESS_HOST=$(kubectl -n "$NAMESPACE" get ingress -o jsonpath='{.spec.rules[0].host}'); echo "Ingress Host: $HOST"; echo "INGRESS_HOST=$HOST" >> $GITHUB_ENV
   
     Integration-Testing:
       needs: dev-deploy
