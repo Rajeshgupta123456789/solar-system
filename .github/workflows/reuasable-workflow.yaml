@@ -1,4 +1,4 @@
-name: Reusable Workflow for Solar System 
+name: Reusable Workflow for Solar System Deployment & CI/CD
 on:
     workflow_call:
       secrets:
