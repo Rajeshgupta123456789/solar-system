@@ -243,13 +243,7 @@ jobs:
             echo "NGROK_URL=$(cat /tmp/ngrok_url)" >> $GITHUB_ENV
             echo "Public URL: $(cat /tmp/ngrok_url)"
       
-        - name: adding a wait time
-          run: |
-            echo "Keeping the environment alive for additional testing..."
-            for i in {1..30}; do
-              echo "Wait iteration $i: Environment will remain active for testing."
-              sleep 10
-            done
+
         - name: Integration Testing
           run: |
             IP="$(minikube ip)"
