@@ -130,9 +130,14 @@ jobs:
       if: contains(github.ref, 'feature/')
       needs: Docker
       uses: ./.github/workflows/reuasable-workflow.yaml
-      
+      secrets:
+        mongodb_password: ${{ secrets.mongodb_password }}
+        ngrok_authtoken: ${{ secrets.ngrok_authtoken }}
+
     prod-deploy:
       if: github.ref == 'refs/heads/main' 
       needs: Docker
       uses: ./.github/workflows/reuasable-workflow.yaml
-      
+      secrets:
+        mongodb_password: ${{ secrets.mongodb_password }}
+        ngrok_authtoken: ${{ secrets.ngrok_authtoken }}

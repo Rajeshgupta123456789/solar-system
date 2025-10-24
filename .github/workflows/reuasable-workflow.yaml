@@ -1,6 +1,12 @@
 name: Reusable Workflow
 on:
     workflow_call:
+      secrets:
+        mongodb_password:
+          required: true
+        ngrok_authtoken:
+          required: true
+        
 jobs:
     reusable-workflow:
      environment: development
@@ -69,7 +75,7 @@ jobs:
             kubectl -n development create secret generic mongo-db-creds \
               --from-literal=MONGO_URI="${{ env.MONGO_URI }}" \
               --from-literal=MONGO_USERNAME="${{ vars.MONGO_USERNAME }}" \
-              --from-literal=MONGO_PASSWORD="${{ secrets.MONGO_PASSWORD }}" \
+              --from-literal=MONGO_PASSWORD="${{ secrets.mongodb_password }}" \
               --save-config \
               --dry-run=client \
               -o yaml | kubectl apply -f -
@@ -94,7 +100,7 @@ jobs:
 
         - name: Expose ingress locally (port-forward) and start ngrok
           env:
-            NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
+            NGROK_AUTHTOKEN: ${{ secrets.ngrok_authtoken }}
             NS: ${{ vars.NAMESPACE }}   # e.g. "development"
           run: |
             set -eux
