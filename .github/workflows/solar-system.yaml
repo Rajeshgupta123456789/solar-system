@@ -2,7 +2,7 @@ name: Solar System Workflow production
 on:
   push:
     branches:
-      - main
+      - main  
       
 env:
     MONGO_URI: 'mongodb+srv://supercluster.d83jj.mongodb.net/superData'
@@ -333,8 +333,8 @@ jobs:
             # Apply Kubernetes manifests
             kubectl apply -f kubernetes/production -n production
 
-            # Wait for production to be ready
-            kubectl rollout status production/solar-system -n production --timeout=120s
+            # Wait for deployment to be ready
+            kubectl rollout status deployment/solar-system -n production --timeout=120s
 
             # Verify pods are running
             kubectl get pods -n production
