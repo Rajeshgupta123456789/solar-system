@@ -127,6 +127,8 @@ jobs:
   
     dev-deploy: 
       needs: Docker
+      outputs:
+        APP_INGRESS_URL: ${{ steps.set-ingress-host-address.outputs.APP_INGRESS_URL }}
       runs-on: ubuntu-latest
       steps:
         - name: Checkout Repository
@@ -243,10 +245,18 @@ jobs:
             echo "NGROK_URL=$(cat /tmp/ngrok_url)" >> $GITHUB_ENV
             echo "Public URL: $(cat /tmp/ngrok_url)"
 
-        - name: adding a wait time
+        - name: Set app Ingress Host URL output
+          id: set-ingress-host-address
           run: |
-            echo "Keeping the environment alive for additional testing..."
-            for i in {1..30}; do
-              echo "Wait iteration $i: Environment will remain active for testing."
-              sleep 10
-            done
+            echo "APP_INGRESS_URL=${(kubectl -n ${{ vars.NAMESPACE }} get ingress -o jsonpath="{.items[0].spec.rules[0].host[0]}')"}" >> $GITHUB_ENV
+    Integration-Testing:
+      needs: dev-deploy
+      runs-on: ubuntu-latest
+      steps:
+        - name: Integration Test
+          env:
+            URL: ${{ needs.dev-deploy.outputs.APP_INGRESS_URL }}
+          run: |
+            echo $URL
+            echo "--------------------------------"
+            curl http://$URL/live -s -k | jq -r .status | grep -i live
