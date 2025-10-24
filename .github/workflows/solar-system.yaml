@@ -249,4 +249,5 @@ jobs:
             IP="$(minikube ip)"
             HOST="solar-system-${{ vars.NAMESPACE}}.${IP}.nip.io"
             echo "Running integration tests against the deployed application..."
+            echo "Target Host: $HOST"
             curl http://$HOST/live -s -k | jq -r .status | grep -i live
