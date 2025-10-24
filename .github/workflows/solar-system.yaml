@@ -351,7 +351,7 @@ jobs:
 
           env:
             NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
-           # NS: ${{ vars.NAMESPACE }}   # e.g. "development"
+            NS: ${{ vars.NAMESPACE }}   # e.g. "development"
           run: |
             set -eux
             # 1) Port-forward ingress 80 -> localhost:8080 (background)
@@ -365,7 +365,7 @@ jobs:
 
             # 3) Build the required Host (nip.io resolves to your minikube IP)
             IP="$(minikube ip)"
-            HOST="solar-system-production.${IP}.nip.io"
+            HOST="solar-system-${NS}.${IP}.nip.io"
 
             # 4) Start ngrok to localhost:8080 AND rewrite Host header
             nohup ngrok http 8080 --host-header="$HOST" > /tmp/ngrok.log 2>&1 &
@@ -380,7 +380,7 @@ jobs:
         - name: Integration Testing
           run: |
             IP="$(minikube ip)"
-            HOST="solar-system-production.${IP}.nip.io"
+            HOST="solar-system-${{ vars.NAMESPACE }}.${IP}.nip.io"
             echo "Running integration tests against the deployed application..."
             echo "Target Host: $HOST"
             curl http://$HOST/live -s -k | jq -r .status | grep -i live
