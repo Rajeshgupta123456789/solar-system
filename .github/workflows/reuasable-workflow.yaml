@@ -85,8 +85,8 @@ jobs:
             # Create MongoDB credentials secret
             kubectl -n development create secret generic mongo-db-creds \
               --from-literal=MONGO_URI="${{ env.MONGO_URI }}" \
-              --from-literal=MONGO_USERNAME="${{ vars.MONGO_USERNAME }}" \
-              --from-literal=MONGO_PASSWORD="${{ secrets.mongodb_password }}" \
+              --from-literal=MONGO_USERNAME="${{ env.MONGO_USERNAME }}" \
+              --from-literal=MONGO_PASSWORD="${{ env.mongodb_password }}" \
               --save-config \
               --dry-run=client \
               -o yaml | kubectl apply -f -
